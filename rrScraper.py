@@ -130,6 +130,9 @@ if __name__ == '__main__':
         open("Output/rr" + str(i) + ".json", "w").write("")
         u = open("Output/rr" + str(i) + ".json", "a")
         batchStart = 1 + i * batchSize
-        u.write(json.dumps(batch(batchStart, batchSize), indent=4))
-        print("batch " + str(i) + " complete.")
+        try: 
+            u.write(json.dumps(batch(batchStart, batchSize), indent=4))
+            print("Batch index " + str(i) + " complete.") # print out finished batches to represent the index of the batch
+        except: 
+            print("Batch index " + (i) + "encountered an error")
     print("Image complete.")
