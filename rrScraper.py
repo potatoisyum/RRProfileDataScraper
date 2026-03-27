@@ -1,8 +1,8 @@
 """
 Royal Road doesn't do any authentication so it's possible to scrape the data directly with a request. No funny stuff needed. 
 """
-batchSize = 10 #The number of users put in one json file
-batches = 1 #number of json files generated
+batchSize = int(input("What batch size? ")) #The number of users put in one json file
+batches = int(input("How many batches? ")) #number of json files generated
 
 # A list of all tags that are forcefully converted from str to int for storage in the json dumps
 convertInt = ["Joined", "Last Active", "Follows", "Favorites", "Ratings", "Reviews", "Comments", "Fictions", "Total Words", "Total Reviews Received", "Total Ratings Received", "Followers"]
@@ -137,7 +137,7 @@ class rrBatchDump(scrapeRRUser):
     def populate(self): 
         # Bounds of the batch
         start = self._size*self._batch + 1
-        end = self._size*(self._batch+1)
+        end = self._size*(self._batch+1) + 1
         for userID in range(start, end):
             try:
                 u = scrapeRRUser(userID) # Instantiate a scrape of an RR user
