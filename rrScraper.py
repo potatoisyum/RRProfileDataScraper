@@ -1,7 +1,7 @@
 """
 Royal Road doesn't do any authentication so it's possible to scrape the data directly with a request. No funny stuff needed. 
 """
-batchSize = 10 #The number of users put in one json file
+batchSize = 100 #The number of users put in one json file
 batches = 1 #number of json files generated
 
 # A list of all tags that are forcefully converted from str to int for storage in the json dumps
