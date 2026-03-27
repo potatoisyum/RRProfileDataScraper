@@ -120,7 +120,7 @@ class rrBatchDump(scrapeRRUser):
                 u = scrapeRRUser(userID) # Instantiate a scrape of an RR user
                 self._dump[userID] = u.user
             except:
-                print("Error in batch " + str(self._batch) + " of user " str(userID))
+                print("Error in batch " + str(self._batch) + " of user " + str(userID))
 
 
 if __name__ == '__main__':
