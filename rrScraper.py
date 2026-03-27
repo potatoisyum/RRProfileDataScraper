@@ -17,8 +17,10 @@ class scrapeRRUser():
     def __init__(self, userID):
         self.user = dict({}) # dict to store all user data
         self._userID = userID # var for userID
-        self._soupMain = makeSoup("https://www.royalroad.com/profile/" + str(userID))
-        self._soupFavorites = makeSoup("https://www.royalroad.com/profile/" + str(userID) + "/favorites")
+        __rr = "https://www.royalroad.com/profile/" + str(userID) + "/" # HTTP path to royalroad profile of userID
+        self._soupMain = makeSoup(__rr) # Main profile page
+        self._soupFictions = makeSoup(__rr + "fictions") # Profile fictions page
+        self._soupFavorites = makeSoup(__rr + "favorites") # Profile favorites page
         self.populate()
     
     # Verifies an existing profile
@@ -65,7 +67,7 @@ class scrapeRRUser():
 
     # Scrapes the favorites
     def rrScrapeUserFavorites(self): 
-        # Creates a non ordered list for fiction IDs
+        # Creates an ordered list for fiction IDs
         favoriteList = []
 
         # Locates the cover image links to extract fiction IDs
@@ -84,12 +86,33 @@ class scrapeRRUser():
         # Put it into user
         self.user ["FavoriteIDs"] = favoriteList
 
+    def rrScrapeUserFictions(self):
+        # Creates an ordered list for fiction IDs
+        fictionsList = []
+
+        # Locates cover image links to extract fiction IDs
+        fictions = self._soupFictions.find_all("img", class_="cover")
+
+        for fictions in fictions:
+            ficIDLong = str(fictions["id"])
+            ficID = ficIDLong.split("-")[1]
+            
+            # Add ficID to fictionsList to be later added to user fictions. Force it to be an int. IT MUST BE INT AHHHHHHHHH
+            try:
+                fictionsList.append(int(ficID))
+            except: 
+                fictionsList.append(ficID)
+
+        # Put it into user
+        self.user ["FictionsIDs"] = fictionsList
+
     # Initatees all the other methods to do the stuff
     def populate(self): 
         retrieve = self.rrExistingPage()
         if retrieve == True:
             self.rrScrapeUsername()
             self.rrScrapeUserProfile()
+            self.rrScrapeUserFictions()
             self.rrScrapeUserFavorites()
         elif retrieve == False:
             print("UserID " + self._userID + " could not be found.")
