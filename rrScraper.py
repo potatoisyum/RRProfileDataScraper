@@ -1,15 +1,17 @@
 """
 Royal Road doesn't do any authentication so it's possible to scrape the data directly with a request. No funny stuff needed. 
 """
-batchSize = int(input("What batch size? ")) #The number of users put in one json file
-batches = int(input("How many batches? ")) #number of json files generated
+batchSize = 100 #The number of users put in one json file
+batches = 1 #number of json files generated
 
 # A list of all tags that are forcefully converted from str to int for storage in the json dumps
 convertInt = ["Joined", "Last Active", "Follows", "Favorites", "Ratings", "Reviews", "Comments", "Fictions", "Total Words", "Total Reviews Received", "Total Ratings Received", "Followers"]
 
+
 from scrapers import makeSoup
 from bs4 import BeautifulSoup
 import json
+import sqlite3
 
 
 class scrapeRRUser(): 
@@ -145,9 +147,64 @@ class rrBatchDump(scrapeRRUser):
             except:
                 print("Error in batch " + str(self._batch) + " of user " + str(userID))
 
+class rrSQLite():
+    # Initialize the database # tag represents favorite, author, or review
+    def __init__(self): 
+        sql_users = [
+            """CREATE TABLE IF NOT EXISTS users (
+                userid INTEGER PRIMARY KEY
+                exists boolean
+                username text
+                joined int
+                last_active int
+                image_time int NOT NULL
+                birthday int
+                gender text
+                location text
+                website text
+                twitter text
+                facebook text
+                bio varchar(3000)
+                follows int
+                favorites int
+                ratings int
+                reviews int
+                comments int
+                fictions int
+                total_words int
+                author_total_reviews_received int
+                author_total_ratings_recived int
+                author_followers int
+                author_favorites int
+            );""",  
+            """CREATE TABLE IF NOT EXISTS fictions (
+                fictionid int 
+                tag text 
+                userid int FOREIGN KEY
+            );"""
+        ]
+
+        try:
+            with sqlite3.connect("Output/royalroad.db") as conn: # connects to the local database
+                pass
+        except sqlite3.OperationalError as e:
+            print("Failed to open database:", e)
+    
+    # Add user to user page
+    def addUser(self, key, value):
+        try:
+            with sqlite3.connect("Output/royalroad.db") as conn: # connects to the local database
+                cursor = con.cursor()
+                cursor.execute(create_table)
+                conn.commit()
+        except sqlite3.OperationalError as e:
+            print("Failed to open database:", e)
+
+
 
 if __name__ == '__main__':
     # Initializes the rr.json files, opens them up, and then puts the batches in them
+    db = rrSQLite()
     for i in range(0,batches):
         b = rrBatchDump(batchSize, i)
         b.getDumpJson()
