@@ -1,7 +1,7 @@
 """
 Royal Road doesn't do any authentication so it's possible to scrape the data directly with a request. No funny stuff needed. 
 """
-batchSize = 100 #The number of users put in one json file
+batchSize = 10 #The number of users put in one json file
 batches = 1 #number of json files generated
 
 # A list of all tags that are forcefully converted from str to int for storage in the json dumps
@@ -125,7 +125,7 @@ class scrapeRRUser():
             print("Existing account error")
         self.user ["Image_Time"] = round(time.time())
 
-class rrBatchDump(scrapeRRUser):
+"""class rrBatchDump(scrapeRRUser):
     # Initialize the dump
     def __init__(self, size, batch):
         self._dump = dict({})
@@ -149,7 +149,7 @@ class rrBatchDump(scrapeRRUser):
                 u = scrapeRRUser(userID) # Instantiate a scrape of an RR user
                 self._dump[userID] = u.user
             except:
-                print("Error in batch " + str(self._batch) + " of user " + str(userID))
+                print("Error in batch " + str(self._batch) + " of user " + str(userID))"""
 
 class rrSQLite():
     # Initialize the database # tag represents favorite, author, or review
@@ -176,7 +176,7 @@ class rrSQLite():
             Fictions INT, 
             Total_Words INT, 
             Total_Reviews_Received INT, 
-            Total_Ratings_Recived INT, 
+            Total_Ratings_Received INT, 
             Followers INT, 
             Favorites INT
             );""",  
@@ -205,7 +205,7 @@ class rrSQLite():
     # Add user to user table
     def addUser(self, userid, page_exists, conn):
         # Table insert
-        sql = '''INSERT INTO users(userid, Page_Exists) VALUES(?, ?)'''
+        sql = '''INSERT OR IGNORE INTO users(userid, Page_Exists) VALUES(?, ?)'''
         user = (userid, page_exists)
         cur = conn.cursor()
         cur.execute(sql, user)
@@ -214,15 +214,15 @@ class rrSQLite():
     # Modify user data
     def updateUser(self, key, value, userid, conn):
         # Table update
-        sql = '''UPDATE users SET ?=? WHERE userid = ?'''
+        sql = "UPDATE users SET " + key + "=? WHERE userid = ?"
         cur = conn.cursor()
-        cur.execute(sql, (key, value, userid))
+        cur.execute(sql, (value, userid))
         conn.commit()
 
     # Add fiction to fiction table
     def addFiction(self, fictionid, conn):
         # Table insert
-        sql = '''INSERT INTO fictions(fictionid) VALUES(?)'''
+        sql = '''INSERT OR IGNORE INTO fictions(fictionid) VALUES(?)'''
         cur = conn.cursor()
         cur.execute(sql, (fictionid))
         conn.commit()
@@ -230,7 +230,7 @@ class rrSQLite():
     # Add relation to relation table
     def addRelation(self, userid, fictionid, relation, conn): 
         # Table insert
-        sql = '''INSERT INTO relations(userid, fictionid, Relation) VALUES(?, ?, ?)'''  
+        sql = '''INSERT OR IGNORE INTO relations(userid, fictionid, Relation) VALUES(?, ?, ?)'''  
         cur = conn.cursor()
         cur.execute(sql, (userid, fictionid, relation))
         conn.commit()
@@ -239,12 +239,23 @@ class rrSQLite():
     def dictCovert(self, user_dict, userid): 
         try:
             with sqlite3.connect(db_path) as conn:
-                page_exists = user_dict ["Page Exists"]
-                del user_dict ["Page Exists"]
+                # Adds the user if they aren't in and also puts in if the page exists or not
+                page_exists = user_dict ["Page_Exists"]
+                image = user_dict ["Image_Time"]
+                del user_dict ["Page_Exists"] 
+                del user_dict ["Image_Time"]
                 self.addUser(userid, page_exists, conn)
+                self.addUser(userid, image, conn)
                 if page_exists == True:
-                    for entry in user_dict.keys:
-                        self.updateUser(entry, user_dict[entry], userid, conn)
+                    for key in user_dict.keys():
+                        if key == "FictionsIDs":
+                            pass
+                        elif key == "FavoriteIDs":
+                            pass
+                        elif key == "Reviews":
+                            pass
+                        else:
+                            self.updateUser(key, user_dict[key], userid, conn)
 
         except sqlite3.OperationalError as e:
             print(e)
@@ -253,7 +264,7 @@ class rrSQLite():
 if __name__ == '__main__':
     # Initializes the rr.json files, opens them up, and then puts the batches in them
     db = rrSQLite()
-    for i in range(0,batches):
-        b = rrBatchDump(batchSize, i)
-        b.getDumpJson()
-    print("Image complete.")
+    for i in range(0,batchSize):
+        rruser = scrapeRRUser(i)
+        db.dictCovert(rruser.user, i)
+    print("In database.")
