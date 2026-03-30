@@ -1,7 +1,7 @@
 """
 Royal Road doesn't do any authentication so it's possible to scrape the data directly with a request. No funny stuff needed. 
 """
-batchSize = 100 #The number of users put in one json file
+batchSize = 10 #The number of users put in one json file
 batches = 1 #number of json files generated
 
 # A list of all tags that are forcefully converted from str to int for storage in the json dumps
@@ -150,43 +150,52 @@ class rrBatchDump(scrapeRRUser):
 class rrSQLite():
     # Initialize the database # tag represents favorite, author, or review
     def __init__(self): 
-        sql_users = [
+        sql_statements = [
             """CREATE TABLE IF NOT EXISTS users (
-                userid INTEGER PRIMARY KEY
-                exists boolean
-                username text
-                joined int
-                last_active int
-                image_time int NOT NULL
-                birthday int
-                gender text
-                location text
-                website text
-                twitter text
-                facebook text
-                bio varchar(3000)
-                follows int
-                favorites int
-                ratings int
-                reviews int
-                comments int
-                fictions int
-                total_words int
-                author_total_reviews_received int
-                author_total_ratings_recived int
-                author_followers int
-                author_favorites int
+            userid INTEGER PRIMARY KEY, 
+            page_exists INT, 
+            username TEXT, 
+            joined INT, 
+            last_active INT, 
+            image_time INT, 
+            birthday INT, 
+            gender TEXT, 
+            location TEXT, 
+            website TEXT, 
+            twitter TEXT, 
+            facebook TEXT, 
+            bio varchar(3000), 
+            follows INT, 
+            favorites INT, 
+            ratings INT, 
+            reviews INT, 
+            comments INT, 
+            fictions INT, 
+            total_words INT, 
+            author_total_reviews_received INT, 
+            author_total_ratings_recived INT, 
+            author_followers INT, 
+            author_favorites INT
             );""",  
+            """CREATE TABLE IF NOT EXISTS relations (
+            userid INT,
+            fictionid INT, 
+            relatio TEXT,
+            PRIMARY KEY (userid, fictionid), 
+            FOREIGN KEY (userid) REFERENCES users (userid)
+            FOREIGN KEY (fictionid) REFERENCES fictions (fictionid)
+            );""", 
             """CREATE TABLE IF NOT EXISTS fictions (
-                fictionid int 
-                tag text 
-                userid int FOREIGN KEY
+            fictionid INT PRIMARY KEY 
             );"""
         ]
 
         try:
             with sqlite3.connect("Output/royalroad.db") as conn: # connects to the local database
-                pass
+                cursor = conn.cursor()
+                for statement in sql_statements:
+                    cursor.execute(statement)
+                conn.commit()
         except sqlite3.OperationalError as e:
             print("Failed to open database:", e)
     
@@ -194,8 +203,7 @@ class rrSQLite():
     def addUser(self, key, value):
         try:
             with sqlite3.connect("Output/royalroad.db") as conn: # connects to the local database
-                cursor = con.cursor()
-                cursor.execute(create_table)
+                
                 conn.commit()
         except sqlite3.OperationalError as e:
             print("Failed to open database:", e)
