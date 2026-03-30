@@ -6,11 +6,12 @@ batches = 1 #number of json files generated
 
 # A list of all tags that are forcefully converted from str to int for storage in the json dumps
 convertInt = ["Joined", "Last Active", "Follows", "Favorites", "Ratings", "Reviews", "Comments", "Fictions", "Total Words", "Total Reviews Received", "Total Ratings Received", "Followers"]
-
+db_path = "Output/royalroad.db"
 
 from scrapers import makeSoup
 from bs4 import BeautifulSoup
 import json
+import time
 import sqlite3
 
 
@@ -58,9 +59,9 @@ class scrapeRRUser():
                 value = timeTag["unixtime"]
             
             # Compare dataHead with convertInt for match, if match, remove commas and make an int. Print error for debugging if something weird happens
-            if (key in convertInt): # TODO make convertInt a proper file and load it at the start with something
+            if (key in convertInt): # TODO make convertInt a proper file and load it at the start with something # TODO Currently loses user favorites because favorites is both the tag for author and reader. Currently ignoring user favorites and letting it override. Probably a bad idea. 
                 try:
-                    self.user[key] = int(value.replace(",", "")) # Removes , and turns it to an int
+                    self.user[key.replace(" ", "_")] = int(value.replace(",", "")) # Removes , and turns it to an int
                 except: 
                     print("Something went wrong with the forceful int change.")
                     self.user[key] = value
@@ -112,17 +113,17 @@ class scrapeRRUser():
     def populate(self): 
         retrieve = self.rrExistingPage()
         if (retrieve == True):
-            self.user ["Page Exists"] = True
+            self.user ["Page_Exists"] = True
             self.rrScrapeUsername()
             self.rrScrapeUserProfile()
             self.rrScrapeUserFictions()
             self.rrScrapeUserFavorites()
         elif (retrieve == False):
             print("UserID " + str(self._userID) + " could not be found.")
-            self.user ["Page Exists"] = False
-            print(self.user)
+            self.user ["Page_Exists"] = False
         else:
             print("Existing account error")
+        self.user ["Image_Time"] = round(time.time())
 
 class rrBatchDump(scrapeRRUser):
     # Initialize the dump
@@ -156,29 +157,28 @@ class rrSQLite():
         sql_statements = [
             """CREATE TABLE IF NOT EXISTS users (
             userid INTEGER PRIMARY KEY, 
-            page_exists INT, 
-            username TEXT, 
-            joined INT, 
-            last_active INT, 
-            image_time INT, 
-            birthday INT, 
-            gender TEXT, 
-            location TEXT, 
-            website TEXT, 
-            twitter TEXT, 
-            facebook TEXT, 
-            bio varchar(3000), 
-            follows INT, 
-            favorites INT, 
-            ratings INT, 
-            reviews INT, 
-            comments INT, 
-            fictions INT, 
-            total_words INT, 
-            author_total_reviews_received INT, 
-            author_total_ratings_recived INT, 
-            author_followers INT, 
-            author_favorites INT
+            Page_Exists INT, 
+            Username TEXT, 
+            Joined INT, 
+            Last_Active INT, 
+            Image_Time INT, 
+            Birthday INT, 
+            Gender TEXT, 
+            Location TEXT, 
+            Website TEXT, 
+            Twitter TEXT, 
+            Facebook TEXT, 
+            Bio varchar(3000), 
+            Follows INT, 
+            Ratings INT, 
+            Reviews INT, 
+            Comments INT, 
+            Fictions INT, 
+            Total_Words INT, 
+            Total_Reviews_Received INT, 
+            Total_Ratings_Recived INT, 
+            Followers INT, 
+            Favorites INT
             );""",  
             """CREATE TABLE IF NOT EXISTS relations (
             userid INT,
@@ -194,7 +194,7 @@ class rrSQLite():
         ]
 
         try:
-            with sqlite3.connect("Output/royalroad.db") as conn: # connects to the local database
+            with sqlite3.connect(db_path) as conn: # connects to the local database
                 cursor = conn.cursor()
                 for statement in sql_statements:
                     cursor.execute(statement)
@@ -205,7 +205,7 @@ class rrSQLite():
     # Add user to user table
     def addUser(self, userid, page_exists, conn):
         # Table insert
-        sql = '''INSERT INTO users(userid, page_exists) VALUES(?, ?)'''
+        sql = '''INSERT INTO users(userid, Page_Exists) VALUES(?, ?)'''
         user = (userid, page_exists)
         cur = conn.cursor()
         cur.execute(sql, user)
@@ -230,7 +230,7 @@ class rrSQLite():
     # Add relation to relation table
     def addRelation(self, userid, fictionid, relation, conn): 
         # Table insert
-        sql = '''INSERT INTO relations(userid, fictionid, relation) VALUES(?, ?, ?)'''  
+        sql = '''INSERT INTO relations(userid, fictionid, Relation) VALUES(?, ?, ?)'''  
         cur = conn.cursor()
         cur.execute(sql, (userid, fictionid, relation))
         conn.commit()
@@ -238,29 +238,14 @@ class rrSQLite():
     # Takes a dict and adds it to all the SQL stuff
     def dictCovert(self, user_dict, userid): 
         try:
-            """
-            username TEXT, 
-            joined INT, 
-            last_active INT, 
-            image_time INT, 
-            birthday INT, 
-            gender TEXT, 
-            location TEXT, 
-            website TEXT, 
-            twitter TEXT, 
-            facebook TEXT, 
-            bio varchar(3000), 
-            follows INT, 
-            favorites INT, 
-            ratings INT, 
-            reviews INT, 
-            comments INT, 
-            fictions INT, 
-            total_words INT, 
-            author_total_reviews_received INT, 
-            author_total_ratings_recived INT, 
-            author_followers INT, 
-            author_favorites INT"""
+            with sqlite3.connect(db_path) as conn:
+                page_exists = user_dict ["Page Exists"]
+                del user_dict ["Page Exists"]
+                self.addUser(userid, page_exists, conn)
+                if page_exists == True:
+                    for entry in user_dict.keys:
+                        self.updateUser(entry, user_dict[entry], userid, conn)
+
         except sqlite3.OperationalError as e:
             print(e)
 
