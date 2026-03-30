@@ -1,7 +1,7 @@
 """
 Royal Road doesn't do any authentication so it's possible to scrape the data directly with a request. No funny stuff needed. 
 """
-batchSize = 10 #The number of users put in one json file
+batchSize = 100 #The number of users put in one json file
 batches = 1 #number of json files generated
 
 # A list of all tags that are forcefully converted from str to int for storage in the json dumps
@@ -29,7 +29,7 @@ class scrapeRRUser():
     def rrExistingPage(self): 
         # Part is the section we want to search through
         part = self._soupMain.find("div", class_="number font-red-sunglo") # The big 404 on page not found error page
-        if part == None:
+        if (part == None):
             return True
         elif (part.text.strip() == "404"):
             print("404 error at " + str(self._userID))
@@ -111,13 +111,16 @@ class scrapeRRUser():
     # Initatees all the other methods to do the stuff
     def populate(self): 
         retrieve = self.rrExistingPage()
-        if retrieve == True:
+        if (retrieve == True):
+            self.user ["Page Exists"] = True
             self.rrScrapeUsername()
             self.rrScrapeUserProfile()
             self.rrScrapeUserFictions()
             self.rrScrapeUserFavorites()
-        elif retrieve == False:
-            print("UserID " + self._userID + " could not be found.")
+        elif (retrieve == False):
+            print("UserID " + str(self._userID) + " could not be found.")
+            self.user ["Page Exists"] = False
+            print(self.user)
         else:
             print("Existing account error")
 
@@ -180,7 +183,7 @@ class rrSQLite():
             """CREATE TABLE IF NOT EXISTS relations (
             userid INT,
             fictionid INT, 
-            relatio TEXT,
+            relation TEXT,
             PRIMARY KEY (userid, fictionid), 
             FOREIGN KEY (userid) REFERENCES users (userid)
             FOREIGN KEY (fictionid) REFERENCES fictions (fictionid)
@@ -199,15 +202,67 @@ class rrSQLite():
         except sqlite3.OperationalError as e:
             print("Failed to open database:", e)
     
-    # Add user to user page
-    def addUser(self, key, value):
-        try:
-            with sqlite3.connect("Output/royalroad.db") as conn: # connects to the local database
-                
-                conn.commit()
-        except sqlite3.OperationalError as e:
-            print("Failed to open database:", e)
+    # Add user to user table
+    def addUser(self, userid, page_exists, conn):
+        # Table insert
+        sql = '''INSERT INTO users(userid, page_exists) VALUES(?, ?)'''
+        user = (userid, page_exists)
+        cur = conn.cursor()
+        cur.execute(sql, user)
+        conn.commit()
+        
+    # Modify user data
+    def updateUser(self, key, value, userid, conn):
+        # Table update
+        sql = '''UPDATE users SET ?=? WHERE userid = ?'''
+        cur = conn.cursor()
+        cur.execute(sql, (key, value, userid))
+        conn.commit()
 
+    # Add fiction to fiction table
+    def addFiction(self, fictionid, conn):
+        # Table insert
+        sql = '''INSERT INTO fictions(fictionid) VALUES(?)'''
+        cur = conn.cursor()
+        cur.execute(sql, (fictionid))
+        conn.commit()
+
+    # Add relation to relation table
+    def addRelation(self, userid, fictionid, relation, conn): 
+        # Table insert
+        sql = '''INSERT INTO relations(userid, fictionid, relation) VALUES(?, ?, ?)'''  
+        cur = conn.cursor()
+        cur.execute(sql, (userid, fictionid, relation))
+        conn.commit()
+
+    # Takes a dict and adds it to all the SQL stuff
+    def dictCovert(self, user_dict, userid): 
+        try:
+            """
+            username TEXT, 
+            joined INT, 
+            last_active INT, 
+            image_time INT, 
+            birthday INT, 
+            gender TEXT, 
+            location TEXT, 
+            website TEXT, 
+            twitter TEXT, 
+            facebook TEXT, 
+            bio varchar(3000), 
+            follows INT, 
+            favorites INT, 
+            ratings INT, 
+            reviews INT, 
+            comments INT, 
+            fictions INT, 
+            total_words INT, 
+            author_total_reviews_received INT, 
+            author_total_ratings_recived INT, 
+            author_followers INT, 
+            author_favorites INT"""
+        except sqlite3.OperationalError as e:
+            print(e)
 
 
 if __name__ == '__main__':
