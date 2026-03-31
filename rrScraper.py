@@ -10,7 +10,6 @@ db_path = "Output/royalroad.db"
 
 from scrapers import makeSoup
 from bs4 import BeautifulSoup
-import json
 import time
 import sqlite3
 
@@ -21,7 +20,7 @@ class scrapeRRUser():
         self.user = dict({}) # dict to store all user data
         self._userID = userID # var for userID
         __rr = "https://www.royalroad.com/profile/" + str(userID) + "/" # HTTP path to royalroad profile of userID
-        self._soupMain = makeSoup(__rr) # Main profile page
+        self._soupMain = makeSoup(__rr) # Main profile page TODO make a seperate script with a timer that queues HTTP requests
         self._soupFictions = makeSoup(__rr + "fictions") # Profile fictions page
         self._soupFavorites = makeSoup(__rr + "favorites") # Profile favorites page
         self.populate()
@@ -125,32 +124,6 @@ class scrapeRRUser():
             print("Existing account error")
         self.user ["Image_Time"] = round(time.time())
 
-"""class rrBatchDump(scrapeRRUser):
-    # Initialize the dump
-    def __init__(self, size, batch):
-        self._dump = dict({})
-        self._batch = batch
-        self._size = size
-        self.populate()
-
-    # Produces the dump json
-    def getDumpJson(self): 
-        path = "Output/rr" + str(self._batch) + ".json" # Path for the dump
-        open(path, "w"). write(json.dumps(self._dump, indent=4)) # Overwrites whatever is here
-        print("Dump " + str(self._batch) + " produced in " + path) # Says the dump was produced
-
-    # Scrapes the batch defined in init
-    def populate(self): 
-        # Bounds of the batch
-        start = self._size*self._batch + 1
-        end = self._size*(self._batch+1) + 1
-        for userID in range(start, end):
-            try:
-                u = scrapeRRUser(userID) # Instantiate a scrape of an RR user
-                self._dump[userID] = u.user
-            except:
-                print("Error in batch " + str(self._batch) + " of user " + str(userID))"""
-
 class rrSQLite():
     # Initialize the database # tag represents favorite, author, or review
     def __init__(self): 
@@ -249,7 +222,7 @@ class rrSQLite():
                 if page_exists == True:
                     for key in user_dict.keys():
                         if key == "FictionsIDs":
-                            pass
+                            pass # TODO actually do this part
                         elif key == "FavoriteIDs":
                             pass
                         elif key == "Reviews":
