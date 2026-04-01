@@ -89,7 +89,7 @@ class scrapeRRUser():
         self.user ["FavoriteIDs"] = favoriteList
 
     def rrScrapeUserFictions(self):
-        # Creates an ordered list for fiction IDs
+        # Creates an ordered list for fiction IDs TODO make it scrape it's own stuff because soupFictions does not scrape every page properly. Potentially use threading to scrape at the same time in a different class
         fictionsList = []
 
         # Locates cover image links to extract fiction IDs
@@ -129,7 +129,7 @@ class rrSQLite():
     def __init__(self): 
         sql_statements = [
             """CREATE TABLE IF NOT EXISTS users (
-            userid INTEGER PRIMARY KEY, 
+            Userid INTEGER PRIMARY KEY, 
             Page_Exists INT, 
             Username TEXT, 
             Joined INT, 
@@ -154,15 +154,16 @@ class rrSQLite():
             Favorites INT
             );""",  
             """CREATE TABLE IF NOT EXISTS relations (
-            userid INT,
-            fictionid INT, 
-            relation TEXT,
-            PRIMARY KEY (userid, fictionid), 
-            FOREIGN KEY (userid) REFERENCES users (userid)
-            FOREIGN KEY (fictionid) REFERENCES fictions (fictionid)
+            Userid INT,
+            Fictionid INT, 
+            Relation TEXT,
+            Rating double,
+            PRIMARY KEY (Userid, Fictionid), 
+            FOREIGN KEY (Userid) REFERENCES users (Userid)
+            FOREIGN KEY (Fictionid) REFERENCES fictions (Fictionid)
             );""", 
             """CREATE TABLE IF NOT EXISTS fictions (
-            fictionid INT PRIMARY KEY 
+            Fictionid INT PRIMARY KEY 
             );"""
         ]
 
@@ -178,7 +179,7 @@ class rrSQLite():
     # Add user to user table
     def addUser(self, userid, page_exists, conn):
         # Table insert
-        sql = '''INSERT OR IGNORE INTO users(userid, Page_Exists) VALUES(?, ?)'''
+        sql = '''INSERT OR IGNORE INTO users(Userid, Page_Exists) VALUES(?, ?)'''
         user = (userid, page_exists)
         cur = conn.cursor()
         cur.execute(sql, user)
@@ -187,7 +188,7 @@ class rrSQLite():
     # Modify user data
     def updateUser(self, key, value, userid, conn):
         # Table update
-        sql = "UPDATE users SET " + key + "=? WHERE userid = ?"
+        sql = "UPDATE users SET " + key + "=? WHERE Userid = ?"
         cur = conn.cursor()
         cur.execute(sql, (value, userid))
         conn.commit()
@@ -203,7 +204,7 @@ class rrSQLite():
     # Add relation to relation table
     def addRelation(self, userid, fictionid, relation, conn): 
         # Table insert
-        sql = '''INSERT OR IGNORE INTO relations(userid, fictionid, Relation) VALUES(?, ?, ?)'''  
+        sql = '''INSERT OR IGNORE INTO relations(Userid, fictionid, Relation) VALUES(?, ?, ?)'''  
         cur = conn.cursor()
         cur.execute(sql, (userid, fictionid, relation))
         conn.commit()
