@@ -202,11 +202,11 @@ class rrSQLite():
         conn.commit()
 
     # Add relation to relation table
-    def addRelation(self, userid, fictionid, relation, conn): 
+    def addRelation(self, userid, fictionid, relation, rating, conn): 
         # Table insert
-        sql = '''INSERT OR IGNORE INTO relations(Userid, fictionid, Relation) VALUES(?, ?, ?)'''  
+        sql = '''INSERT OR IGNORE INTO relations(Userid, fictionid, Relation, Rating) VALUES(?, ?, ?, ?)'''  
         cur = conn.cursor()
-        cur.execute(sql, (userid, fictionid, relation))
+        cur.execute(sql, (userid, fictionid, relation, rating))
         conn.commit()
 
     # Takes a dict and adds it to all the SQL stuff
@@ -223,11 +223,17 @@ class rrSQLite():
                 if page_exists == True:
                     for key in user_dict.keys():
                         if key == "FictionsIDs":
-                            pass # TODO actually do this part
+                            for fictionid in key:
+                                self.addFiction(fictionid, conn)
+                                self.addRelation(fictionid, userid, "Fiction", None, conn)
                         elif key == "FavoriteIDs":
-                            pass
-                        elif key == "Reviews":
-                            pass
+                            for fictionid in key:
+                                self.addFiction(fictionid, conn)
+                                self.addRelation(fictionid, userid, "Favorite", None, conn)
+                        elif key == "ReviewIDs":
+                            for review in key:
+                                self.addFiction(review[0], conn)
+                                self.addRelation(review[0], userid, "Review", review[1], conn)
                         else:
                             self.updateUser(key, user_dict[key], userid, conn)
 
