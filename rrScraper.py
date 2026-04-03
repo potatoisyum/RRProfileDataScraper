@@ -19,10 +19,9 @@ class scrapeRRUser():
     def __init__(self, userID):
         self.user = dict({}) # dict to store all user data
         self._userID = userID # var for userID
-        __rr = "https://www.royalroad.com/profile/" + str(userID) + "/" # HTTP path to royalroad profile of userID
-        self._soupMain = makeSoup(__rr) # Main profile page TODO make a seperate script with a timer that queues HTTP requests
-        self._soupFictions = makeSoup(__rr + "fictions") # Profile fictions page
-        self._soupFavorites = makeSoup(__rr + "favorites") # Profile favorites page
+        self._rr = "https://www.royalroad.com/profile/" + str(userID) + "/" # HTTP path to royalroad profile of userID
+        self._soupMain = makeSoup(self._rr) # Main profile page TODO make a seperate script with a timer that queues HTTP requests
+        self._soupFictions = makeSoup(self._rr + "fictions?pages=1") # Profile fictions page
         self.populate()
     
     # Verifies an existing profile
@@ -71,22 +70,23 @@ class scrapeRRUser():
     def rrScrapeUserFavorites(self): 
         # Creates an ordered list for fiction IDs
         favoriteList = []
-
-        # Locates the cover image links to extract fiction IDs
-        favorites = self._soupFavorites.find_all("img", class_="cover")
-
-        for favorites in favorites:
-            ficIDLong = str(favorites["id"])
-            ficID = ficIDLong.split("-")[1]
-            
-            # Add ficID to favoriteList to be later added to user favorites. Force it to be an int. IT MUST BE INT AHHHHHHHHH
-            try:
-                favoriteList.append(int(ficID))
-            except: 
-                favoriteList.append(ficID)
-
-        # Put it into user
-        self.user ["FavoriteIDs"] = favoriteList
+        # Goes through all the favorite pages to actually find all the favorites
+        for i in range(1,10): 
+            # Locates the cover image links to extract fiction IDs
+            _soupFavorites = makeSoup(self._rr + "favorites?page=" + str(i)) # Profile favorites page
+            favorites = _soupFavorites.find_all("img", class_="cover")
+            if favorites == []:
+                break
+            for favorites in favorites:
+                ficIDLong = str(favorites["id"])
+                ficID = ficIDLong.split("-")[1]
+                # Add ficID to favoriteList to be later added to user favorites. Force it to be an int. IT MUST BE INT AHHHHHHHHH
+                try:
+                    favoriteList.append(int(ficID))
+                except: 
+                    favoriteList.append(ficID)
+            # Put it into user
+            self.user ["FavoriteIDs"] = favoriteList
 
     def rrScrapeUserFictions(self):
         # Creates an ordered list for fiction IDs TODO make it scrape it's own stuff because soupFictions does not scrape every page properly. Potentially use threading to scrape at the same time in a different class
