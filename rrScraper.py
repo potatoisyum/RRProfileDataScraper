@@ -21,7 +21,6 @@ class scrapeRRUser():
         self._userID = userID # var for userID
         self._rr = "https://www.royalroad.com/profile/" + str(userID) + "/" # HTTP path to royalroad profile of userID
         self._soupMain = makeSoup(self._rr) # Main profile page TODO make a seperate script with a timer that queues HTTP requests
-        self._soupFictions = makeSoup(self._rr + "fictions?pages=1") # Profile fictions page
         self.populate()
     
     # Verifies an existing profile
@@ -71,7 +70,8 @@ class scrapeRRUser():
         # Creates an ordered list for fiction IDs
         favoriteList = []
         # Goes through all the favorite pages to actually find all the favorites
-        for i in range(1,10): 
+        i = 1 # Page counter
+        while True: 
             # Locates the cover image links to extract fiction IDs
             _soupFavorites = makeSoup(self._rr + "favorites?page=" + str(i)) # Profile favorites page
             favorites = _soupFavorites.find_all("img", class_="cover")
@@ -85,25 +85,37 @@ class scrapeRRUser():
                     favoriteList.append(int(ficID))
                 except: 
                     favoriteList.append(ficID)
-            # Put it into user
-            self.user ["FavoriteIDs"] = favoriteList
+            if(i>255):
+                print("Over 255 pages of favorites for user " + str(self._userID))
+                break
+            i+=1 # Increase page counter
+        
+        # Put it into user
+        self.user ["FavoriteIDs"] = favoriteList
 
     def rrScrapeUserFictions(self):
         # Creates an ordered list for fiction IDs TODO make it scrape it's own stuff because soupFictions does not scrape every page properly. Potentially use threading to scrape at the same time in a different class
         fictionsList = []
-
-        # Locates cover image links to extract fiction IDs
-        fictions = self._soupFictions.find_all("img", class_="cover")
-
-        for fictions in fictions:
-            ficIDLong = str(fictions["id"])
-            ficID = ficIDLong.split("-")[1]
-            
-            # Add ficID to fictionsList to be later added to user fictions. Force it to be an int. IT MUST BE INT AHHHHHHHHH
-            try:
-                fictionsList.append(int(ficID))
-            except: 
-                fictionsList.append(ficID)
+        i = 1 # Page counter
+        while True:
+            # Locates cover image links to extract fiction IDs
+            self._soupFictions = makeSoup(self._rr + "fictions?page=" + str(i)) # Profile fictions page
+            fictions = self._soupFictions.find_all("img", class_="cover")
+            if fictions == []:
+                break
+            for fictions in fictions:
+                ficIDLong = str(fictions["id"])
+                ficID = ficIDLong.split("-")[1]
+                
+                # Add ficID to fictionsList to be later added to user fictions. Force it to be an int. IT MUST BE INT AHHHHHHHHH
+                try:
+                    fictionsList.append(int(ficID))
+                except: 
+                    fictionsList.append(ficID)
+            if(i>255):
+                print("Over 255 pages of fictions for user" + str(self._userID))
+                break
+            i+=1 # Increase page counter
 
         # Put it into user
         self.user ["FictionsIDs"] = fictionsList
