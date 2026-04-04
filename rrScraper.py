@@ -94,7 +94,7 @@ class scrapeRRUser():
         self.user ["FavoriteIDs"] = favoriteList
 
     def rrScrapeUserFictions(self):
-        # Creates an ordered list for fiction IDs TODO make it scrape it's own stuff because soupFictions does not scrape every page properly. Potentially use threading to scrape at the same time in a different class
+        # Creates an ordered list for fiction IDs TODO Potentially use threading to scrape at the same time in a different class
         fictionsList = []
         i = 1 # Page counter
         while True:
