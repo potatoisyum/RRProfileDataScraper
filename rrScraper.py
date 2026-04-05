@@ -91,6 +91,7 @@ class scrapeRRUser():
             i+=1 # Increase page counter
         
         # Put it into user
+        self.user ["Favorited"] = len(favoriteList)
         self.user ["FavoriteIDs"] = favoriteList
 
     def rrScrapeUserFictions(self):
@@ -163,7 +164,8 @@ class rrSQLite():
             Total_Reviews_Received INT, 
             Total_Ratings_Received INT, 
             Followers INT, 
-            Favorites INT
+            Favorites INT, 
+            Favorited INT
             );""",  
             """CREATE TABLE IF NOT EXISTS relations (
             Userid INT,
