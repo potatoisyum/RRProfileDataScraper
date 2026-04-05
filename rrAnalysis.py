@@ -1,5 +1,9 @@
 """
 This file interacts with Output/royalroad.db to analyze the data in there for relational data
+
+TODO a dict reconstructor given a user ID
+TODO a generalized full sheet printer
+TODO a gneralized individual searcher for ALL sheets
 """
 
 db_path = "Output/royalroad.db"
@@ -11,7 +15,9 @@ import sqlite3
 class readDatabase():
     def __init__(self):
         self.getAllUsers()
+        self.getUser(2, ('Favorited',))
         
+    # Prints all user data
     def getAllUsers(self):
         try:
             with sqlite3.connect(db_path) as conn:
@@ -22,13 +28,18 @@ class readDatabase():
                     print(row)
         except sqlite3.OperationalError as e:
             print(e)
-    
-    # Returns the information of a user
-    def getUser(self, userid):
+
+    # Returns the information of a user based on a tuple of requested keys
+    def getUser(self, userid, keys):
         try:
+            search = " Userid"
+            for key in keys:
+                search += ', ' + key
             with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
-                cur.execute('SELECT Userid, Page_Exists, Username FROM users')
+                cur.execute('SELECT' + search + ' FROM users WHERE Userid=?', (userid,))
+                rows = cur.fetchone()
+                print(rows)
         except sqlite3.OperationalError as e:
             print(e)
 
