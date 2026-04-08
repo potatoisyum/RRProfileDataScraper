@@ -212,7 +212,7 @@ class rrSQLite():
         # Table insert
         sql = '''INSERT OR IGNORE INTO fictions(fictionid) VALUES(?)'''
         cur = conn.cursor()
-        cur.execute(sql, (fictionid))
+        cur.execute(sql, (fictionid,))
         conn.commit()
 
     # Add relation to relation table
@@ -221,7 +221,7 @@ class rrSQLite():
         sql = '''INSERT OR IGNORE INTO relations(Userid, fictionid, Relation, Rating) VALUES(?, ?, ?, ?)'''  
         cur = conn.cursor()
         cur.execute(sql, (userid, fictionid, relation, rating))
-        conn.commit()
+        conn.commit() #TODO FIX THIS BECAUSE IT JUST DOESN'T WORK AT ALL
 
     # Takes a dict and adds it to all the SQL stuff
     def dictCovert(self, user_dict, userid): 
@@ -237,15 +237,15 @@ class rrSQLite():
                 if page_exists == True:
                     for key in user_dict.keys():
                         if key == "FictionsIDs":
-                            for fictionid in key:
+                            for fictionid in user_dict[key]:
                                 self.addFiction(fictionid, conn)
                                 self.addRelation(fictionid, userid, "Fiction", None, conn)
                         elif key == "FavoriteIDs":
-                            for fictionid in key:
+                            for fictionid in user_dict[key]:
                                 self.addFiction(fictionid, conn)
                                 self.addRelation(fictionid, userid, "Favorite", None, conn)
                         elif key == "ReviewIDs":
-                            for review in key:
+                            for review in user_dict[key]:
                                 self.addFiction(review[0], conn)
                                 self.addRelation(review[0], userid, "Review", review[1], conn)
                         else:
