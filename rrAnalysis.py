@@ -48,10 +48,10 @@ class readDatabase():
     def getUser(self, userid: int, keys: list):
         try:
             # Loops through the key list to format the sql
-            search = keys[0]
-            keys.pop(0)
+            search = ''
             for key in keys:
-                search += ', ' + key
+                search += key + ','
+            search = search[:len(search)-1]
             with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
                 cur.execute('SELECT ' + search + ' FROM users WHERE Userid=?', (userid,))
@@ -75,7 +75,9 @@ class readDatabase():
     # Dict reconstructor given a userID. Returns dict
     def makeDict(self, userid: int):
         _attributes = ['Userid', 'Page_Exists', 'Username', 'Joined', 'Last_Active', 'Image_Time', 'Birthday', 'Gender', 'Location', 'Website', 'Twitter', 'Facebook', 'Bio', 'Follows', 'Ratings', 'Reviews', 'Comments', 'Fictions', 'Total_Words', 'Total_Reviews_Received', 'Total_Ratings_Received', 'Followers', 'Favorites', 'Favorited']
+        print(_attributes)
         information = self.getUser(userid, _attributes)
+        print(_attributes)
         user = dict({})
         # Loops through everything to assign to the dict in the same order as requested from the database
         for i in range(0,len(_attributes)):
