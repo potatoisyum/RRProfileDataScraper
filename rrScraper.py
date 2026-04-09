@@ -239,15 +239,15 @@ class rrSQLite():
                         if key == "FictionsIDs":
                             for fictionid in user_dict[key]:
                                 self.addFiction(fictionid, conn)
-                                self.addRelation(fictionid, userid, "Fiction", None, conn)
+                                self.addRelation(userid, fictionid, "Fiction", None, conn)
                         elif key == "FavoriteIDs":
                             for fictionid in user_dict[key]:
                                 self.addFiction(fictionid, conn)
-                                self.addRelation(fictionid, userid, "Favorite", None, conn)
+                                self.addRelation(userid, fictionid, "Favorite", None, conn)
                         elif key == "ReviewIDs":
                             for review in user_dict[key]:
                                 self.addFiction(review[0], conn)
-                                self.addRelation(review[0], userid, "Review", review[1], conn)
+                                self.addRelation(userid, review[0], "Review", review[1], conn)
                         else:
                             self.updateUser(key, user_dict[key], userid, conn)
 
