@@ -14,10 +14,6 @@ import sqlite3
 # Prints out all the contents in the database
 class readDatabase():
     def __init__(self):
-        self.getAllUsers()
-        self.getAllRelations()
-        print(self.getUser(2, ['Favorited']))
-        print(self.getUserRelation(2))
         print(self.makeDict(2))
         
     # Prints all user data
@@ -75,9 +71,7 @@ class readDatabase():
     # Dict reconstructor given a userID. Returns dict
     def makeDict(self, userid: int):
         _attributes = ['Userid', 'Page_Exists', 'Username', 'Joined', 'Last_Active', 'Image_Time', 'Birthday', 'Gender', 'Location', 'Website', 'Twitter', 'Facebook', 'Bio', 'Follows', 'Ratings', 'Reviews', 'Comments', 'Fictions', 'Total_Words', 'Total_Reviews_Received', 'Total_Ratings_Received', 'Followers', 'Favorites', 'Favorited']
-        print(_attributes)
         information = self.getUser(userid, _attributes)
-        print(_attributes)
         user = dict({})
         # Loops through everything to assign to the dict in the same order as requested from the database
         for i in range(0,len(_attributes)):
