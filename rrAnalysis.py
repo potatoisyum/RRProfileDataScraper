@@ -68,6 +68,19 @@ class readDatabase():
         except sqlite3.OperationalError as e:
             print(e)
 
+    # Returns the entries that refer to a fiction
+    def getFictionRelation(self, fictionid:int):
+        try:
+            with sqlite3.connect(db_path) as conn:
+                # Pulls the row
+                cur = conn.cursor()
+                cur.execute('SELECT Userid, Fictionid, Relation, Rating FROM relations WHERE Fictionid=?', (fictionid,))
+                rows = cur.fetchall()
+                return(rows)
+        except sqlite3.OperationalError as e:
+            print(e)
+
+
     # Dict reconstructor given a userID. Returns dict
     def makeDict(self, userid: int):
         _attributes = ['Userid', 'Page_Exists', 'Username', 'Joined', 'Last_Active', 'Image_Time', 'Birthday', 'Gender', 'Location', 'Website', 'Twitter', 'Facebook', 'Bio', 'Follows', 'Ratings', 'Reviews', 'Comments', 'Fictions', 'Total_Words', 'Total_Reviews_Received', 'Total_Ratings_Received', 'Followers', 'Favorites', 'Favorited']
