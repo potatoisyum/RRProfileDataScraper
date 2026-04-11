@@ -94,6 +94,7 @@ class scrapeRRUser():
         self.user ["Favorited"] = len(favoriteList)
         self.user ["FavoriteIDs"] = favoriteList
 
+    # Scrapes the fictions
     def rrScrapeUserFictions(self):
         # Creates an ordered list for fiction IDs TODO Potentially use threading to scrape at the same time in a different class
         fictionsList = []
@@ -121,6 +122,40 @@ class scrapeRRUser():
         # Put it into user
         self.user ["FictionsIDs"] = fictionsList
 
+    # Scrapes the reviews and ratings and stores them as tuples 
+    def rrScrapeUserReviews(self):
+        # Creates an ordered list for fiction IDs TODO Potentially use threading to scrape at the same time in a different class
+        reviewList = []
+        i = 1 # Page counter
+        while True:
+            # Locates cover image links to extract fiction IDs
+            self._soupFictions = makeSoup(self._rr + "reviews?page=" + str(i)) # Profile fictions page
+            reviewsContent = self._soupFictions.find_all("div", class_="row review")
+            reviewsRating = self._soupFictions.find_all("div", class_="row hidden-xs visible-sm visible-md visible-lg")
+            if reviewsContent == []:
+                break
+            for j in range(0,len(reviewsContent)):
+                review = {}
+                review ["Fictionid"] = str(reviewsContent[j].find("div", class_="review-content")["id"]).split("-")[2]
+                review ["Content:"] = reviewsContent[j].find("div", class_="review-content").text
+                ratings = reviewsRating[j].find_all("div", tabindex="-1")
+                for rating in ratings:
+                    rating = str(rating["aria-label"]).replace(" score: ", " ").replace(" out of ", " ").split(" ")
+                    review [rating[0]] = rating[1]
+                print(review)
+                # Add ficID to fictionsList to be later added to user fictions. Force it to be an int. IT MUST BE INT AHHHHHHHHH
+                """try:
+                    fictionsList.append(int(ficID))
+                except: 
+                    fictionsList.append(ficID)"""
+            if(i>255):
+                print("Over 255 pages of reviews for user" + str(self._userID))
+                break
+            i+=1 # Increase page counter
+
+        # Put it into user
+        # self.user ["FictionsIDs"] = fictionsList
+
     # Initatees all the other methods to do the stuff
     def populate(self): 
         retrieve = self.rrExistingPage()
@@ -130,6 +165,7 @@ class scrapeRRUser():
             self.rrScrapeUserProfile()
             self.rrScrapeUserFictions()
             self.rrScrapeUserFavorites()
+            self.rrScrapeUserReviews()
         elif (retrieve == False):
             print("UserID " + str(self._userID) + " could not be found.")
             self.user ["Page_Exists"] = False
@@ -246,8 +282,8 @@ class rrSQLite():
                                 self.addRelation(userid, fictionid, "Favorite", None, conn)
                         elif key == "ReviewIDs":
                             for review in user_dict[key]:
-                                self.addFiction(review[0], conn)
-                                self.addRelation(userid, review[0], "Review", review[1], conn)
+                                self.addFiction(review["Fictionid"], conn)
+                                self.addRelation(userid, review["Fictionid"], "Review", review["Rating"], conn)
                         else:
                             self.updateUser(key, user_dict[key], userid, conn)
 
