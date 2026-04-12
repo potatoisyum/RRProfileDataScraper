@@ -95,15 +95,25 @@ class readDatabase():
                 user[_attributes[i]] = information[i]
         fictions = []
         favorites = []
-        reviews = []
+        reviews = {}
         userRelations = self.getUserRelation(userid)
         for fiction in userRelations:
+            print(fiction)
             if fiction[2] == "Fiction":
                 fictions.append(fiction[1])
             elif fiction[2] == "Favorite":
                 favorites.append(fiction[1])
             elif fiction[2] == "Review":
-                reviews.append([fiction[1],fiction[3]])
+                for data in range(0, 9):
+                    print(data)
+                    review = {}
+                    if data == 0: # Userid
+                        pass
+                    if data == 1: # Fictionid
+                        pass
+                    reviewstructure = ['Userid', 'Fictionid', 'Relation', 'Overall', 'Style', 'Story', 'Grammar', 'Character', 'Content']
+                    review[reviewstructure[data]] = fiction[data]
+                reviews[fiction[2]] = review
         user ["FictionIDs"] = fictions
         user ["FavoriteIDs"] = favorites
         user ["Reviews"] = reviews
