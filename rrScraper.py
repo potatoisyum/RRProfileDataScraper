@@ -209,7 +209,7 @@ class rrSQLite():
             Story double, 
             Grammar double, 
             Character double,
-            Contents TEXT,
+            Content TEXT,
             PRIMARY KEY (Userid, Fictionid), 
             FOREIGN KEY (Userid) REFERENCES users (Userid)
             FOREIGN KEY (Fictionid) REFERENCES fictions (Fictionid)
@@ -256,7 +256,7 @@ class rrSQLite():
     # Add relation to relation table
     def addRelation(self, userid, fictionid, relation, review, conn): 
         # Table insert
-        sql = '''INSERT OR IGNORE INTO relations(Userid, fictionid, Relation, Overall, Style, Story, Grammar, Character, Content) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)'''  
+        sql = '''INSERT OR IGNORE INTO relations(Userid, fictionid, Relation) VALUES(?, ?, ?)'''  
         cur = conn.cursor()
         cur.execute(sql, (userid, fictionid, relation))
         # , review["Overall"], review["Style"], review["Story"], review["Grammar"], review["Character"], review["Content"])

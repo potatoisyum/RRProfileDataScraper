@@ -62,7 +62,7 @@ class readDatabase():
             with sqlite3.connect(db_path) as conn:
                 # Pulls the row
                 cur = conn.cursor()
-                cur.execute('SELECT Userid, Fictionid, Relation, Rating FROM relations WHERE Userid=?', (userid,))
+                cur.execute('SELECT Userid, Fictionid, Relation, Overall, Style, Story, Grammar, Character, Content FROM relations WHERE Userid=?', (userid,))
                 rows = cur.fetchall()
                 return(rows)
         except sqlite3.OperationalError as e:
@@ -74,7 +74,7 @@ class readDatabase():
             with sqlite3.connect(db_path) as conn:
                 # Pulls the row
                 cur = conn.cursor()
-                cur.execute('SELECT Userid, Fictionid, Relation, Rating FROM relations WHERE Fictionid=?', (fictionid,))
+                cur.execute('SELECT Userid, Fictionid, Relation, Overall, Style, Story, Grammar, Character, Content FROM relations WHERE Fictionid=?', (fictionid,))
                 rows = cur.fetchall()
                 return(rows)
         except sqlite3.OperationalError as e:
