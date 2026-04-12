@@ -125,7 +125,7 @@ class scrapeRRUser():
     # Scrapes the reviews and ratings and stores them as tuples 
     def rrScrapeUserReviews(self):
         # Creates an ordered list for fiction IDs TODO Potentially use threading to scrape at the same time in a different class
-        reviewList = []
+        reviewList = {}
         i = 1 # Page counter
         while True:
             # Locates cover image links to extract fiction IDs
@@ -136,22 +136,19 @@ class scrapeRRUser():
                 break
             for j in range(0,len(reviewsContent)):
                 review = {}
-                review ["Fictionid"] = str(reviewsContent[j].find("div", class_="review-content")["id"]).split("-")[2]
-                review ["Content:"] = reviewsContent[j].find("div", class_="review-content").text
+                review ["Content"] = reviewsContent[j].find("div", class_="review-content").text
                 ratings = reviewsRating[j].find_all("div", tabindex="-1")
                 for rating in ratings:
                     rating = str(rating["aria-label"]).replace(" score: ", " ").replace(" out of ", " ").split(" ")
-                    review [rating[0]] = rating[1]
-                print(review)
-                # Add ficID to fictionsList to be later added to user fictions. Force it to be an int. IT MUST BE INT AHHHHHHHHH
-                """try:
-                    fictionsList.append(int(ficID))
-                except: 
-                    fictionsList.append(ficID)"""
+                    review [rating[0]] = float(rating[1])
+                # Add to review list
+                reviewList[str(reviewsContent[j].find("div", class_="review-content")["id"]).split("-")[2]] = review
             if(i>255):
                 print("Over 255 pages of reviews for user" + str(self._userID))
                 break
             i+=1 # Increase page counter
+        
+        print(reviewList)
 
         # Put it into user
         # self.user ["FictionsIDs"] = fictionsList
@@ -207,7 +204,12 @@ class rrSQLite():
             Userid INT,
             Fictionid INT, 
             Relation TEXT,
-            Rating double,
+            Overall double,
+            Style double, 
+            Story double, 
+            Grammar double, 
+            Character double,
+            Contents TEXT,
             PRIMARY KEY (Userid, Fictionid), 
             FOREIGN KEY (Userid) REFERENCES users (Userid)
             FOREIGN KEY (Fictionid) REFERENCES fictions (Fictionid)
@@ -252,12 +254,21 @@ class rrSQLite():
         conn.commit()
 
     # Add relation to relation table
-    def addRelation(self, userid, fictionid, relation, rating, conn): 
+    def addRelation(self, userid, fictionid, relation, review, conn): 
         # Table insert
-        sql = '''INSERT OR IGNORE INTO relations(Userid, fictionid, Relation, Rating) VALUES(?, ?, ?, ?)'''  
+        sql = '''INSERT OR IGNORE INTO relations(Userid, fictionid, Relation, Overall, Style, Story, Grammar, Character, Content) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)'''  
         cur = conn.cursor()
-        cur.execute(sql, (userid, fictionid, relation, rating))
-        conn.commit() #TODO FIX THIS BECAUSE IT JUST DOESN'T WORK AT ALL
+        cur.execute(sql, (userid, fictionid, relation))
+        # , review["Overall"], review["Style"], review["Story"], review["Grammar"], review["Character"], review["Content"])
+        conn.commit()
+
+    # Modify relation data
+    def updateRelation(self, userid, fictionid, key, value, conn):
+        # Table insert
+        sql = "UPDATE relations SET " + key + "=? WHERE (Userid,Fictionid) = (?)"
+        cur = conn.cursor()
+        cur.execute(sql, (value, (userid,fictionid)))
+        conn.commit()
 
     # Takes a dict and adds it to all the SQL stuff
     def dictCovert(self, user_dict, userid): 
@@ -281,9 +292,11 @@ class rrSQLite():
                                 self.addFiction(fictionid, conn)
                                 self.addRelation(userid, fictionid, "Favorite", None, conn)
                         elif key == "ReviewIDs":
-                            for review in user_dict[key]:
+                            for fictionid in user_dict[key].keys():
                                 self.addFiction(review["Fictionid"], conn)
-                                self.addRelation(userid, review["Fictionid"], "Review", review["Rating"], conn)
+                                self.addRelation(userid, fictionid, "Review", conn)
+                                for reviewkeys in user_dict[key][fictionid].keys():
+                                    self.updateRelation(userid, fictionid, reviewkeys, user_dict[key][fictionid][reviewkeys], conn)
                         else:
                             self.updateUser(key, user_dict[key], userid, conn)
 
