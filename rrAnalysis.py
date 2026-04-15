@@ -98,7 +98,6 @@ class readDatabase():
         reviews = {}
         userRelations = self.getUserRelation(userid)
         for fiction in userRelations:
-            print(fiction)
             if fiction[2] == "Fiction":
                 fictions.append(fiction[1])
             elif fiction[2] == "Favorite":
