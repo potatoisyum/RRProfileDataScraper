@@ -111,7 +111,7 @@ class readDatabase():
                         pass
                     reviewstructure = ['Userid', 'Fictionid', 'Relation', 'Overall', 'Style', 'Story', 'Grammar', 'Character', 'Content']
                     review[reviewstructure[data]] = fiction[data]
-                reviews[fiction[2]] = review
+                reviews[fiction[1]] = review
         user ["FictionIDs"] = fictions
         user ["FavoriteIDs"] = favorites
         user ["Reviews"] = reviews
