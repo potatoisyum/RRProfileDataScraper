@@ -104,7 +104,6 @@ class readDatabase():
                 favorites.append(fiction[1])
             elif fiction[2] == "Review":
                 for data in range(0, 9):
-                    print(data)
                     review = {}
                     if data == 0: # Userid
                         pass
