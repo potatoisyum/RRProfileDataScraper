@@ -14,7 +14,16 @@ import sqlite3
 # Prints out all the contents in the database
 class readDatabase():
     def __init__(self):
-        print(self.makeDict(2))
+        action = str(input("Action (user/fiction/relation):")) #TODO add fiction to this list which lists fictions rating from reviews that are logged and all of the reviews/favorited users attributed to them
+        if action == "user":
+            target = int(input("userID:"))
+            print(self.makeDict(target))
+        if action == "fiction":
+            print(self.getAllRelations())
+        if action == "relation":
+            target = int(input("fictionID:"))
+            relations = self.getFictionRelation(target)
+
         
     # Prints all user data
     def getAllUsers(self):
@@ -33,7 +42,7 @@ class readDatabase():
         try:
             with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
-                cur.execute('SELECT Userid, Fictionid, Relation, Rating FROM relations')
+                cur.execute('SELECT Userid, Fictionid, Relation, Overall, Style, Story, Grammar, Character, Content FROM relations')
                 rows = cur.fetchall()
                 for row in rows:
                     print(row)

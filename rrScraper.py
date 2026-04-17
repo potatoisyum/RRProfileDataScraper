@@ -1,8 +1,8 @@
 """
 Royal Road doesn't do any authentication so it's possible to scrape the data directly with a request. No funny stuff needed. 
 """
-batchSize = 10 #The number of users put in one json file
-batches = 1 #number of json files generated
+batchLower = int(input("Lower:")) #The number of users put in one json file
+batchUpper = int(input("Upper:")) #number of json files generated
 
 # A list of all tags that are forcefully converted from str to int for storage in the json dumps
 convertInt = ["Joined", "Last Active", "Follows", "Favorites", "Ratings", "Reviews", "Comments", "Fictions", "Total Words", "Total Reviews Received", "Total Ratings Received", "Followers"]
@@ -149,10 +149,6 @@ class scrapeRRUser():
             i+=1 # Increase page counter
         
         self.user["ReviewIDs"] = reviewList
-        print(reviewList)
-
-        # Put it into user
-        # self.user ["FictionsIDs"] = fictionsList
 
     # Initatees all the other methods to do the stuff
     def populate(self): 
@@ -294,12 +290,9 @@ class rrSQLite():
                                 self.addRelation(userid, fictionid, "Favorite", conn)
                         elif key == "ReviewIDs":
                             for fictionid in user_dict[key].keys(): # review fic ids
-                                print (user_dict[key][fictionid])
                                 self.addFiction(fictionid, conn)
                                 self.addRelation(userid, fictionid, "Review", conn)
                                 for reviewkeys in user_dict[key][fictionid].keys():
-                                    print(reviewkeys)
-                                    print(user_dict[key][fictionid][reviewkeys])
                                     self.updateRelation(userid, fictionid, reviewkeys, user_dict[key][fictionid][reviewkeys], conn)
                         else:
                             self.updateUser(key, user_dict[key], userid, conn)
@@ -311,7 +304,7 @@ class rrSQLite():
 if __name__ == '__main__':
     # Initializes the rr.json files, opens them up, and then puts the batches in them
     db = rrSQLite()
-    for i in range(0,batchSize):
+    for i in range(batchLower,batchUpper):
         rruser = scrapeRRUser(i)
         db.dictCovert(rruser.user, i)
     print("In database.")
