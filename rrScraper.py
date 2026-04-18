@@ -307,4 +307,5 @@ if __name__ == '__main__':
     for i in range(batchLower,batchUpper):
         rruser = scrapeRRUser(i)
         db.dictCovert(rruser.user, i)
+        print(i)
     print("In database.")

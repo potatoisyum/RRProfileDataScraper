@@ -23,6 +23,7 @@ class readDatabase():
         if action == "relation":
             target = int(input("fictionID:"))
             relations = self.getFictionRelation(target)
+            print (relations)
 
         
     # Prints all user data
