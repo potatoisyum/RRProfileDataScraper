@@ -6,7 +6,7 @@ TODO a generalized full sheet printer
 TODO a gneralized individual searcher for ALL sheets
 """
 
-db_path = "Output/royalroad.db"
+db_path = "royalroad.db"
 
 import sqlite3
 

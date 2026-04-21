@@ -6,7 +6,7 @@ batchUpper = int(input("Upper:")) #number of json files generated
 
 # A list of all tags that are forcefully converted from str to int for storage in the json dumps
 convertInt = ["Joined", "Last Active", "Follows", "Favorites", "Ratings", "Reviews", "Comments", "Fictions", "Total Words", "Total Reviews Received", "Total Ratings Received", "Followers"]
-db_path = "Output/royalroad.db"
+db_path = "royalroad.db"
 
 from scrapers import makeSoup
 from bs4 import BeautifulSoup
